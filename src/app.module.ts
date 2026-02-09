@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BooksModule } from './books/books.module';
 import { Book } from './books/entities/books.entity';
+import { AuthorsModule } from './authors/authors.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { Book } from './books/entities/books.entity';
       synchronize: true,
     }),
     BooksModule,
+    AuthorsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Book } from './entities/books.entity';
-import generateId from '../helper/generateId';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { GetBookFilterDto } from './dto/get-book-filter.dto';
@@ -15,11 +14,7 @@ export class BooksService {
   private books: Book[] = [];
 
   async findBooks(filterDto: GetBookFilterDto) {
-    const {
-      search,
-      publication_date: publicationDate,
-      language
-    } = filterDto;
+    const { search, publication_date: publicationDate, language } = filterDto;
 
     const query = this.bookRepository.createQueryBuilder('book');
 
@@ -61,7 +56,7 @@ export class BooksService {
   async updateBook(bookId: number, updatedBook: UpdateBookDto) {
     const book = await this.bookRepository.preload({
       id: bookId,
-      ...updatedBook
+      ...updatedBook,
     });
 
     if (!book) {
