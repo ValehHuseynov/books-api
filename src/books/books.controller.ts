@@ -7,6 +7,7 @@ import {
   Patch,
   Delete,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { Book } from './entities/books.entity';
@@ -19,13 +20,13 @@ export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @Get()
-  findAll(@Query() filterDto: GetBookFilterDto): Book[] {
+  findAll(@Query() filterDto: GetBookFilterDto) {
     return this.booksService.findBooks(filterDto);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.booksService.findBookById(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.booksService.findBookById(id);
   }
 
   @Post()
@@ -34,13 +35,13 @@ export class BooksController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() body: UpdateBookDto) {
-    const book = this.booksService.updateBook(+id, body);
+  update(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateBookDto) {
+    const book = this.booksService.updateBook(id, body);
     return book;
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.booksService.deleteBook(+id);
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.booksService.deleteBook(id);
   }
 }

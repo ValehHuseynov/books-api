@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Book } from './entities/books.entity';
 import generateId from '../helper/generateId';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -7,49 +9,42 @@ import { GetBookFilterDto } from './dto/get-book-filter.dto';
 
 @Injectable()
 export class BooksService {
+  constructor(
+    @InjectRepository(Book) private readonly bookRepository: Repository<Book>,
+  ) {}
   private books: Book[] = [];
 
-  findBooks(filterDto: GetBookFilterDto): Book[] {
+  async findBooks(filterDto: GetBookFilterDto) {
     const {
       search,
-      author,
       publication_date: publicationDate,
-      language,
+      language
     } = filterDto;
 
-    let filteredBooks = this.books;
+    const query = this.bookRepository.createQueryBuilder('book');
 
     if (search) {
-      filteredBooks = filteredBooks.filter(
-        (book) =>
-          book.title.toLowerCase().includes(search.toLowerCase()) ||
-          book.author.toLowerCase().includes(search.toLowerCase()),
-      );
-    }
-
-    if (author) {
-      filteredBooks = filteredBooks.filter(
-        (book) => book.author.toLowerCase() === author.toLowerCase(),
-      );
+      query.andWhere('(book.title LIKE :search OR book.author LIKE :search)', {
+        search: `%${search}%`,
+      });
     }
 
     if (publicationDate) {
-      filteredBooks = filteredBooks.filter(
-        (book) => book.publicationDate === publicationDate,
-      );
+      query.andWhere('(book.publicationDate = :publicationDate)', {
+        publicationDate,
+      });
     }
 
     if (language) {
-      filteredBooks = filteredBooks.filter(
-        (book) => book.language === language,
-      );
+      query.andWhere('(book.language = :language)', { language });
     }
 
-    return filteredBooks;
+    const books = await query.getMany();
+    return books;
   }
 
-  findBookById(bookId: number) {
-    const book = this.books.find((book) => book.id === bookId);
+  async findBookById(bookId: number) {
+    const book = await this.bookRepository.findOneBy({ id: bookId });
 
     if (!book) {
       throw new NotFoundException(`Book with id: ${bookId} not found!`);
@@ -58,28 +53,31 @@ export class BooksService {
     return book;
   }
 
-  createBook(data: CreateBookDto): Book {
-    const book = {
-      id: generateId(),
-      ...data,
-    };
-
-    this.books.push(book);
-    return book;
+  createBook(createBookDto: CreateBookDto) {
+    const book = this.bookRepository.create(createBookDto);
+    return this.bookRepository.save(book);
   }
 
-  updateBook(bookId: number, updatedBook: UpdateBookDto) {
-    const book = this.findBookById(bookId);
-    Object.assign(book, updatedBook);
-    return book;
-  }
+  async updateBook(bookId: number, updatedBook: UpdateBookDto) {
+    const book = await this.bookRepository.preload({
+      id: bookId,
+      ...updatedBook
+    });
 
-  deleteBook(bookId: number) {
-    const index = this.books.findIndex((book) => book.id === bookId);
-    if (index !== -1) {
-      this.books.splice(index, 1);
-      return { message: `Book with id: ${bookId} deleted!` };
+    if (!book) {
+      throw new NotFoundException(`Book with id: ${bookId} not found!`);
     }
-    throw new NotFoundException(`Book with id: ${bookId} not found!`);
+
+    return this.bookRepository.save(book);
+  }
+
+  async deleteBook(bookId: number) {
+    const book = await this.bookRepository.findOneBy({ id: bookId });
+
+    if (!book) {
+      throw new NotFoundException(`Book with id: ${bookId} not found!`);
+    }
+
+    return this.bookRepository.remove(book);
   }
 }

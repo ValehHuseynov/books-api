@@ -1,0 +1,10 @@
+POST http://localhost:4000/books/
+Content-Type: application/json
+
+{
+  "title": "The Great Gatsby 3",
+  "author": "John Doe 3",
+  "publicationDate": "2025-01-10",
+  "numberOfPages": 455,
+  "language": "en"
+}
