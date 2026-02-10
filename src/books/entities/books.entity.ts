@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Author } from '../../authors/entities/author.entity';
 
 export enum Language {
   ENGLISH = 'en',
@@ -13,8 +14,8 @@ export class Book {
   @Column()
   title: string;
 
-  @Column()
-  author: string;
+  @ManyToOne(() => Author, (author) => author.books)
+  author: Author;
 
   @Column({ type: 'date' })
   publicationDate: string;

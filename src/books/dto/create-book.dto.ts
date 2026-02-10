@@ -1,4 +1,5 @@
 import {
+  IsInt,
   IsString,
   IsNumber,
   IsEnum,
@@ -12,9 +13,9 @@ export class CreateBookDto {
   @IsNotEmpty()
   title: string;
 
-  @IsString()
+  @IsInt()
   @IsNotEmpty()
-  author: string;
+  authorId: number;
 
   @IsDateString()
   @IsNotEmpty()

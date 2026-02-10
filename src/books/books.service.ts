@@ -5,6 +5,7 @@ import { Book } from './entities/books.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { GetBookFilterDto } from './dto/get-book-filter.dto';
+import PostgreSQLErrorCode from '../postgresql-error-code';
 
 @Injectable()
 export class BooksService {
@@ -16,12 +17,18 @@ export class BooksService {
   async findBooks(filterDto: GetBookFilterDto) {
     const { search, publication_date: publicationDate, language } = filterDto;
 
-    const query = this.bookRepository.createQueryBuilder('book');
+    const query = this.bookRepository
+      .createQueryBuilder('book')
+      .leftJoinAndSelect('book.author', 'author');
+
 
     if (search) {
-      query.andWhere('(book.title LIKE :search OR book.author LIKE :search)', {
-        search: `%${search}%`,
-      });
+      query.andWhere(
+        '(book.title iLIKE :search OR author.name iLIKE :search)',
+        {
+          search: `%${search}%`,
+        },
+      );
     }
 
     if (publicationDate) {
@@ -48,22 +55,50 @@ export class BooksService {
     return book;
   }
 
-  createBook(createBookDto: CreateBookDto) {
-    const book = this.bookRepository.create(createBookDto);
+  async createBook(createBookDto: CreateBookDto) {
+    const book = this.bookRepository.create({
+      ...createBookDto,
+      author: {
+        id: createBookDto.authorId,
+      },
+    });
+
+    try {
+      return await this.bookRepository.save(book);
+    } catch (error) {
+      if (error.code === PostgreSQLErrorCode.ForeignKeyViolation) {
+        throw new NotFoundException(
+          `Author with id ${createBookDto.authorId} doesn't exist!`,
+        );
+      }
+      throw error;
+    }
     return this.bookRepository.save(book);
   }
 
   async updateBook(bookId: number, updatedBook: UpdateBookDto) {
-    const book = await this.bookRepository.preload({
-      id: bookId,
-      ...updatedBook,
-    });
+    try {
+      const book = await this.bookRepository.preload({
+        id: bookId,
+        ...updatedBook,
+        ...(updatedBook.authorId
+          ? { author: { id: updatedBook.authorId } }
+          : {}),
+      });
 
-    if (!book) {
-      throw new NotFoundException(`Book with id: ${bookId} not found!`);
+      if (!book) {
+        throw new NotFoundException(`Book with id: ${bookId} not found!`);
+      }
+
+      return await this.bookRepository.save(book);
+    } catch (error) {
+      if (error.code === PostgreSQLErrorCode.ForeignKeyViolation) {
+        throw new NotFoundException(
+          `Author with id ${updatedBook.authorId} doesn't exist!`,
+        );
+      }
+      throw error;
     }
-
-    return this.bookRepository.save(book);
   }
 
   async deleteBook(bookId: number) {
