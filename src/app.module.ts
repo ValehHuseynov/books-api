@@ -7,6 +7,8 @@ import { BooksModule } from './books/books.module';
 import { Book } from './books/entities/books.entity';
 import { AuthorsModule } from './authors/authors.module';
 import { Author } from './authors/entities/author.entity';
+import { AuthModule } from './auth/auth.module';
+import { User } from './auth/entities/user.entity';
 import * as Joi from 'joi';
 
 @Module({
@@ -35,12 +37,13 @@ import * as Joi from 'joi';
         username: configService.get<string>('DATABASE_USER'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [Book, Author],
+        entities: [Book, Author, User],
         synchronize: Boolean(configService.get<string>('DATABASE_SYNCHRONIZE')),
       }),
     }),
     BooksModule,
     AuthorsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -8,19 +8,27 @@ import {
   Delete,
   Query,
   ParseIntPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { BooksService } from './books.service';
-import { Book } from './entities/books.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { GetBookFilterDto } from './dto/get-book-filter.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
+@UseGuards(AuthGuard)
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @Get()
-  findAll(@Query() filterDto: GetBookFilterDto) {
+  findAll(
+    @Query() filterDto: GetBookFilterDto,
+    @CurrentUser('email') userInfo,
+  ) {
+    console.log(userInfo);
     return this.booksService.findBooks(filterDto);
   }
 

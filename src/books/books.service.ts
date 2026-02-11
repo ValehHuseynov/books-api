@@ -10,7 +10,7 @@ import PostgreSQLErrorCode from '../postgresql-error-code';
 @Injectable()
 export class BooksService {
   constructor(
-    @InjectRepository(Book) private readonly bookRepository: Repository<Book>
+    @InjectRepository(Book) private readonly bookRepository: Repository<Book>,
   ) {}
   private books: Book[] = [];
 
