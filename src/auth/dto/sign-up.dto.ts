@@ -4,7 +4,9 @@ import {
   IsEmail,
   IsOptional,
   IsStrongPassword,
+  IsEnum,
 } from 'class-validator';
+import { Role } from '../entities/user.entity';
 
 export class SignUpDto {
   @IsString()
@@ -33,4 +35,8 @@ export class SignUpDto {
     },
   )
   password: string;
+
+  @IsEnum(Role)
+  @IsNotEmpty()
+  role: Role;
 }

@@ -1,5 +1,6 @@
 POST http://localhost:4000/books/
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJleGFtcGxlQGV4YW1wbGUuY29tIiwicm9sZSI6InZpZXdlciIsImlhdCI6MTc3MDg4Mjc4NywiZXhwIjoxNzcwODgzMzg3fQ.ed7TIGkc9mvRTgED-LzL84w1k-jRIwAxBGqCTH1s_IM
 
 {
   "title": "Example book 2",

@@ -1,5 +1,6 @@
 POST http://localhost:4000/authors
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzA4ODQ0MjEsImV4cCI6MTc3MDg4NTAyMX0.1DwKm_uxLtgo-kaLZ7fGueouVx4R_cvkyTiTF5vMZV0
 
 {
   "name": "Example Author 3"

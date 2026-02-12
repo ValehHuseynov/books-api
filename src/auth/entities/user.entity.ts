@@ -1,5 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
+export enum Role {
+  ADMIN = 'admin',
+  VIEWER = 'viewer',
+}
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -16,6 +21,7 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({ type: 'enum', enum: Role, default: Role.VIEWER })
+  role: Role;
 }
-
-

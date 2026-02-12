@@ -1,7 +1,8 @@
-import { IsEmail, IsStrongPassword } from 'class-validator';
+import { IsEmail, IsStrongPassword, IsNotEmpty } from 'class-validator';
 
 export class SignInDto {
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @IsStrongPassword(
@@ -17,5 +18,6 @@ export class SignInDto {
         'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one symbol.',
     },
   )
+  @IsNotEmpty()
   password: string;
 }

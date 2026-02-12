@@ -39,6 +39,7 @@ export class AuthService {
     const payload = {
       id: user.id,
       email: signInDto.email,
+      role: user.role,
     };
 
     // Get a access token from jwtService
@@ -48,7 +49,7 @@ export class AuthService {
   }
 
   async signUp(signupDto: SignUpDto) {
-    const { name, surname, email, password } = signupDto;
+    const { name, surname, email, password, role } = signupDto;
 
     // Generate a salt using bcrypt
     const salt = await bcrypt.genSalt();
@@ -62,6 +63,7 @@ export class AuthService {
       surname,
       email,
       password: hashedPassword,
+      role,
     });
 
     try {
