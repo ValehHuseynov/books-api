@@ -4,7 +4,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 jest.mock('bcrypt', () => ({
   genSalt: jest.fn().mockResolvedValue('someSalt'),
@@ -21,7 +22,7 @@ const mockJwtService = {
 const mockRepository = {
   create: jest.fn(),
   save: jest.fn(),
-  findOne: jest.fn(),
+  findOneBy: jest.fn(),
 };
 
 describe('AuthService', () => {
@@ -100,6 +101,39 @@ describe('AuthService', () => {
         email: 'example@example.com',
         password: 'hashedPassword',
       });
+    });
+  });
+
+  describe('signIn', () => {
+    it('should throw UnauthorizedException if email does not exist', async () => {
+      const signInDto = {
+        email: 'invalid@example.com',
+        password: 'wrongPassword',
+      };
+      userRepository.findOneBy.mockResolvedValue(null);
+
+      const signInAction = service.signIn(signInDto);
+
+      await expect(signInAction).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException if password is wrong', async () => {
+      const signInDto = {
+        email: 'valid@example.com',
+        password: 'wrongPassword',
+      };
+      const mockUser = {
+        id: 1,
+        email: 'valid@example.com',
+        password: 'hashedPassword',
+      };
+      userRepository.findOneBy?.mockResolvedValue(mockUser);
+      const compare = jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
+
+      const signInAction = service.signIn(signInDto);
+
+      await expect(signInAction).rejects.toThrow(UnauthorizedException);
+      expect(compare).toHaveBeenCalledWith('wrongPassword', 'hashedPassword');
     });
   });
 });
