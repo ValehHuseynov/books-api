@@ -2,9 +2,9 @@ POST http://localhost:4000/auth/signup
 Content-Type: application/json
 
 {
-  "name": "Admin",
-  "surname": "Admin",
-  "email": "admin@example.com",
-  "password": "Admin123!@#",
-  "role": "admin"
+  "name": "Example 2",
+  "surname": "Example 2",
+  "email": "example2@example.com",
+  "password": "Example123!@#",
+  "role": "viewer"
 }

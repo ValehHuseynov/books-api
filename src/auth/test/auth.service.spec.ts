@@ -135,5 +135,25 @@ describe('AuthService', () => {
       await expect(signInAction).rejects.toThrow(UnauthorizedException);
       expect(compare).toHaveBeenCalledWith('wrongPassword', 'hashedPassword');
     });
+
+    it('should return an access token for valid credentials', async () => {
+      const signInDto = { email: 'valid@example.com', password: 'password123' };
+      const user = {
+        id: 1,
+        email: 'valid@example.com',
+        password: 'hashedPassword',
+        role: 'user',
+      };
+
+      jest
+        .spyOn(bcrypt, 'compare')
+        .mockImplementation(() => Promise.resolve(true));
+      userRepository.findOneBy?.mockResolvedValue(user);
+      mockJwtService.signAsync.mockResolvedValue('someAccessToken');
+
+      const result = await service.signIn(signInDto);
+
+      await expect(result).toEqual({ accessToken: 'someAccessToken' });
+    });
   });
 });
