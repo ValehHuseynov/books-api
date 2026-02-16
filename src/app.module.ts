@@ -10,9 +10,29 @@ import { Author } from './authors/entities/author.entity';
 import { AuthModule } from './auth/auth.module';
 import { User } from './auth/entities/user.entity';
 import * as Joi from 'joi';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        redact: [
+          'req.headers.authorization',
+          'req.body.email',
+          'req.body.password',
+        ],
+        transport: {
+          target: 'pino-pretty',
+          options: { colorize: true, singleLine: true },
+        },
+        serializers: {
+          req(req) {
+            req.body = req.raw.body;
+            return req;
+          },
+        },
+      },
+    }),
     ConfigModule.forRoot({
       envFilePath: `.env.${process.env.NODE_ENV}.local`,
       validationSchema: Joi.object({

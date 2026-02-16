@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Book } from './entities/books.entity';
@@ -12,7 +12,7 @@ export class BooksService {
   constructor(
     @InjectRepository(Book) private readonly bookRepository: Repository<Book>,
   ) {}
-  private books: Book[] = [];
+  private readonly logger = new Logger(BooksService.name);
 
   async findBooks(filterDto: GetBookFilterDto) {
     const { search, publication_date: publicationDate, language } = filterDto;
@@ -41,8 +41,14 @@ export class BooksService {
       query.andWhere('(book.language = :language)', { language });
     }
 
-    const books = await query.getMany();
-    return books;
+    try {
+      const books = await query.getMany();
+      this.logger.log(`Found ${books.length} books with applied filters`);
+      return books;
+    } catch (error) {
+      this.logger.error(`Error finding books: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async findBookById(bookId: number) {
@@ -64,8 +70,11 @@ export class BooksService {
     });
 
     try {
-      return await this.bookRepository.save(book);
+      const savedBook = await this.bookRepository.save(book);
+      this.logger.log(`Book created with ID: ${savedBook.id}`);
+      return savedBook;
     } catch (error) {
+      this.logger.error(`Error creating book: ${error.message}`, error.stack);
       if (error.code === PostgreSQLErrorCode.ForeignKeyViolation) {
         throw new NotFoundException(
           `Author with id ${createBookDto.authorId} doesn't exist!`,
@@ -90,8 +99,11 @@ export class BooksService {
         throw new NotFoundException(`Book with id: ${bookId} not found!`);
       }
 
-      return await this.bookRepository.save(book);
+      const savedBook = await this.bookRepository.save(book);
+      this.logger.log(`Book with ID: ${bookId} was successfully updated!`);
+      return savedBook;
     } catch (error) {
+      this.logger.error(`Error updating book: ${error.message}`, error.stack);
       if (error.code === PostgreSQLErrorCode.ForeignKeyViolation) {
         throw new NotFoundException(
           `Author with id ${updatedBook.authorId} doesn't exist!`,
